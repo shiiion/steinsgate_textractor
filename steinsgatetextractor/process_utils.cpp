@@ -8,16 +8,19 @@
 #pragma comment(lib, "shlwapi.lib")
 
 namespace {
-	HANDLE target_process = INVALID_HANDLE_VALUE;
+	HANDLE target_process = NULL;
 	DWORD executable_base = 0xFFFFFFFF;
 }
 
 bool open_process(std::string const& window_title) {
 	DWORD proc_id;
 	HWND proc_window = FindWindowA(nullptr, window_title.c_str());
+	if (proc_window == NULL) {
+		return false;
+	}
 	GetWindowThreadProcessId(proc_window, &proc_id);
 	target_process = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, proc_id);
-	return target_process != INVALID_HANDLE_VALUE;
+	return target_process != NULL;
 }
 
 HMODULE get_module(std::string const& target_module_name) {
