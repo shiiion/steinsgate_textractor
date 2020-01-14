@@ -11,7 +11,8 @@ cell phone is handled, such as names on the contacts screen.
 Made with VS2017, requires any windows SDK, otherwise should compile 
 out-of-the-box.
 ### Use Instructions
-Not the most useful tool (only prints to console), but running it after 
+Not the most useful tool (only prints to console, also copies to 
+clipboard), but running it after 
 Steins;Gate is started should do the trick. It will print any new text 
 bubbles to console, and will print e-mail sender, subject, and body when 
 upon opening said e-mail.
