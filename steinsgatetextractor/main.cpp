@@ -9,6 +9,23 @@
 #include "sg_text_extractor.h"
 #include "mages_string_map.h"
 
+void copy_string_to_clipboard(std::wstring const& str)
+{
+	if (!OpenClipboard(NULL)) {
+		return;
+	}
+	if (!EmptyClipboard()) {
+		CloseClipboard();
+		return;
+	}
+	HGLOBAL clipboard_data = GlobalAlloc(GMEM_MOVEABLE, (str.size() + 1) * sizeof(wchar_t));
+	memcpy(GlobalLock(clipboard_data), str.data(), (str.size() + 1) * sizeof(wchar_t));
+	GlobalUnlock(clipboard_data);
+	SetClipboardData(CF_UNICODETEXT, clipboard_data);
+	CloseClipboard();
+	GlobalFree(clipboard_data);
+}
+
 int main() {
 	std::wcout << "Looking for Steins;Gate window" << std::endl;
 	_setmode(_fileno(stdout), _O_U16TEXT);
@@ -34,11 +51,13 @@ int main() {
 		if (main_text.extract_string()) {
 			std::wstring text;
 			main_text.get_formatted_string(text);
+			copy_string_to_clipboard(text);
 			std::wcout << text << std::endl;
 		}
 		if (mail_text.extract_string()) {
 			std::wstring text;
 			mail_text.get_formatted_string(text);
+			copy_string_to_clipboard(text);
 			std::wcout << text << std::endl;
 		}
 		Sleep(50);
