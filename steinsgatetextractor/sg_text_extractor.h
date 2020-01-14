@@ -5,8 +5,14 @@
 
 #include <Windows.h>
 
+enum Game {
+	SG,
+	SG0,
+	INVALID,
+};
+
 // returns successful initialize
-bool initialize_sg_sigs();
+Game initialize_sigs();
 
 class SGFormattedText {
 public:
@@ -31,6 +37,43 @@ private:
 	std::wstring subject;
 	std::wstring body;
 	DWORD phone_state;
+};
+
+class SG0RINEMessage : public SGFormattedText {
+public:
+	constexpr static DWORD PHONE_STATE_RINE = 7;
+	constexpr static DWORD PHONE_STATE_RINE_RESPOND = 8;
+
+	static DWORD get_phone_state();
+
+	bool extract_string() override;
+	void get_formatted_string(std::wstring& str_out) const override;
+	int get_message_count() const;
+
+protected:
+	std::wstring sender_name;
+	std::wstring message;
+	int last_message_index = 0;
+};
+
+class SG0RINEConversation : public SG0RINEMessage {
+public:
+	bool extract_string() override;
+	void get_formatted_string(std::wstring& str_out) const override;
+
+private:
+	std::vector<std::wstring> all_senders;
+	std::vector<std::wstring> all_messages;
+	mutable int last_copy_index;
+};
+
+class SG0RINESendableMessage : public SGFormattedText {
+public:
+	bool extract_string() override;
+	void get_formatted_string(std::wstring& str_out) const override;
+
+private:
+	std::wstring sendable_message;
 };
 
 class SGMainText : public SGFormattedText {

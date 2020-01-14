@@ -63,13 +63,12 @@ namespace {
 		DWORD section_size;
 	};
 
-	std::vector<SectionInfo> get_all_code_sections(HMODULE module) {
+	SectionInfo get_section_by_name(HMODULE module, std::string const& section_name) {
 		MODULEINFO info;
 		if (!GetModuleInformation(target_process, module, &info, sizeof(MODULEINFO))) {
-			return {};
+			return { 0, 0 };
 		}
 
-		std::vector<SectionInfo> ret;
 		DWORD pe_walk = reinterpret_cast<DWORD>(module);
 		IMAGE_DOS_HEADER dos_hdr;
 		ReadProcessMemory(target_process, reinterpret_cast<LPCVOID>(pe_walk), &dos_hdr, sizeof(IMAGE_DOS_HEADER), NULL);
@@ -80,16 +79,11 @@ namespace {
 		for (int i = 0; i < nt_hdrs.FileHeader.NumberOfSections; i++) {
 			IMAGE_SECTION_HEADER sec_hdr;
 			ReadProcessMemory(target_process, reinterpret_cast<LPCVOID>(pe_walk + i * sizeof(IMAGE_SECTION_HEADER)), &sec_hdr, sizeof(IMAGE_SECTION_HEADER), NULL);
-			if (sec_hdr.Name[0] == '.' &&
-				sec_hdr.Name[1] == 't' &&
-				sec_hdr.Name[2] == 'e' &&
-				sec_hdr.Name[3] == 'x' &&
-				sec_hdr.Name[4] == 't') {
-				ret.emplace_back(SectionInfo { (reinterpret_cast<DWORD>(info.lpBaseOfDll) + sec_hdr.VirtualAddress), sec_hdr.Misc.VirtualSize });
+			if (section_name == reinterpret_cast<char const*>(sec_hdr.Name)) {
+				return { (reinterpret_cast<DWORD>(info.lpBaseOfDll) + sec_hdr.VirtualAddress), sec_hdr.Misc.VirtualSize };
 			}
-
 		}
-		return ret;
+		return { 0, 0 };
 	}
 
 	std::pair<std::vector<BYTE>, std::vector<BYTE>> construct_pattern_mask(std::string const& pattern) {
@@ -120,7 +114,7 @@ namespace {
 	}
 }
 
-std::vector<DWORD> external_batch_sigscan(std::string const& module, std::vector<std::string> const& patterns) {
+std::vector<DWORD> external_batch_sigscan(std::string const& module, std::string const& section, std::vector<std::string> const& patterns) {
 	HMODULE target_module = get_module(module);
 	if (target_module == NULL) {
 		return {};
@@ -128,28 +122,26 @@ std::vector<DWORD> external_batch_sigscan(std::string const& module, std::vector
 	std::vector<DWORD> results;
 	results.resize(patterns.size());
 
-	auto sections = get_all_code_sections(target_module);
-	for (SectionInfo const& section : sections) {
-		std::vector<BYTE> section_data;
-		section_data.resize(section.section_size);
-		SIZE_T bytes_read;
-		ReadProcessMemory(target_process, reinterpret_cast<LPCVOID>(section.section_base), section_data.data(), section_data.size(), &bytes_read);
+	auto section_info = get_section_by_name(target_module, section);
+	std::vector<BYTE> section_data;
+	section_data.resize(section_info.section_size);
+	SIZE_T bytes_read;
+	ReadProcessMemory(target_process, reinterpret_cast<LPCVOID>(section_info.section_base), section_data.data(), section_data.size(), &bytes_read);
 
-		for (size_t i = 0; i < patterns.size(); i++) {
-			if (results[i]) {
-				continue;
-			}
+	for (size_t i = 0; i < patterns.size(); i++) {
+		if (results[i]) {
+			continue;
+		}
 
-			std::vector<BYTE> bytes, mask;
-			std::tie(bytes, mask) = construct_pattern_mask(patterns[i]);
+		std::vector<BYTE> bytes, mask;
+		std::tie(bytes, mask) = construct_pattern_mask(patterns[i]);
 
-			for (DWORD j = 0;
-				j < (section.section_size - bytes.size() + 1);
-				j++) {
-				if (sig_match(bytes, mask, &section_data[j])) {
-					results[i] = section.section_base + j;
-					break;
-				}
+		for (DWORD j = 0;
+			j < (section_info.section_size - bytes.size() + 1);
+			j++) {
+			if (sig_match(bytes, mask, &section_data[j])) {
+				results[i] = section_info.section_base + j;
+				break;
 			}
 		}
 	}

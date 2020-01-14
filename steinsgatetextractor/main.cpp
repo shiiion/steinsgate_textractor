@@ -27,13 +27,14 @@ void copy_string_to_clipboard(std::wstring const& str)
 }
 
 int main() {
-	std::wcout << "Looking for Steins;Gate window" << std::endl;
+	std::wcout << "Looking for Steins;Gate or STEINS;GATE 0 window" << std::endl;
 	_setmode(_fileno(stdout), _O_U16TEXT);
-	while (!open_process("Steins;Gate")) {
+	while (!open_process("Steins;Gate") && !open_process("STEINS;GATE 0")) {
 		Sleep(500);
 	}
-	std::wcout << L"Steins;Gate process found" << std::endl << L"Loading signatures" << std::endl;
-	if (!initialize_sg_sigs()) {
+	std::wcout << L"Game found" << std::endl << L"Loading signatures" << std::endl;
+	Game game;
+	if ((game = initialize_sigs()) == INVALID) {
 		std::wcout << "Failed to load signatures" << std::endl;
 		return 1;
 	}
@@ -45,21 +46,32 @@ int main() {
 		return 2;
 	}
 
+	std::wcout << L"Loaded charset, ready.\n" << std::endl;
+
 	SGMainText main_text;
-	SGEmailText mail_text;
+	SGEmailText email_text;
+	SG0RINEConversation rine_convo;
+	SG0RINESendableMessage rine_msg;
+
+	std::vector<SGFormattedText*> source_list;
+	source_list.emplace_back(&main_text);
+	if (game == SG) {
+		source_list.emplace_back(&email_text);
+	}
+	else {
+		source_list.emplace_back(&rine_convo);
+		source_list.emplace_back(&rine_msg);
+	}
+
 	while (true) {
-		if (main_text.extract_string()) {
-			std::wstring text;
-			main_text.get_formatted_string(text);
-			copy_string_to_clipboard(text);
-			std::wcout << text << std::endl;
+		for (SGFormattedText* source : source_list) {
+			if (source->extract_string()) {
+				std::wstring text;
+				source->get_formatted_string(text);
+				copy_string_to_clipboard(text);
+				std::wcout << text << std::endl;
+			}
+			Sleep(100);
 		}
-		if (mail_text.extract_string()) {
-			std::wstring text;
-			mail_text.get_formatted_string(text);
-			copy_string_to_clipboard(text);
-			std::wcout << text << std::endl;
-		}
-		Sleep(50);
 	}
 }
