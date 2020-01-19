@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <Psapi.h>
+#include <TlHelp32.h>
 #include <Shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 
@@ -12,14 +13,39 @@ namespace {
 	DWORD executable_base = 0xFFFFFFFF;
 }
 
-bool open_process(std::string const& window_title) {
-	DWORD proc_id;
-	HWND proc_window = FindWindowA(nullptr, window_title.c_str());
-	if (proc_window == NULL) {
+std::vector<DWORD> find_processes(std::string const& image_name) {
+	HANDLE proc_snap;
+	if ((proc_snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)) == INVALID_HANDLE_VALUE) {
+		return {};
+	}
+	
+	PROCESSENTRY32 pe_32;
+	std::vector<DWORD> ret;
+	pe_32.dwSize = sizeof(PROCESSENTRY32);
+	if (Process32First(proc_snap, &pe_32)) {
+		do {
+			if (image_name == pe_32.szExeFile) {
+				ret.emplace_back(pe_32.th32ProcessID);
+			}
+		} while (Process32Next(proc_snap, &pe_32));
+	}
+	CloseHandle(proc_snap);
+	return ret;
+}
+
+bool open_process(std::string const& image_name,
+	std::function<int(std::vector<DWORD> const&)> on_processes_found) {
+	auto processes_by_image = find_processes(image_name);
+	if (!processes_by_image.size()) {
 		return false;
 	}
-	GetWindowThreadProcessId(proc_window, &proc_id);
-	target_process = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, proc_id);
+
+	DWORD target_process_id = on_processes_found(processes_by_image);
+	if (!target_process_id) {
+		return false;
+	}
+
+	target_process = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_READ | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION, FALSE, target_process_id);
 	return target_process != NULL;
 }
 
@@ -47,6 +73,13 @@ DWORD get_executable_base() {
 
 HANDLE get_process_handle() {
 	return target_process;
+}
+
+DWORD allocate_page() {
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	DWORD page = reinterpret_cast<DWORD>(VirtualAllocEx(target_process, NULL, info.dwPageSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+	return page;
 }
 
 namespace {

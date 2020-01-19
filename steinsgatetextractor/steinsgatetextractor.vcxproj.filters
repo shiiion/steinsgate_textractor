@@ -27,6 +27,9 @@
     <ClCompile Include="mages_string_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="jmp_hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="process_utils.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mages_string_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jmp_hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

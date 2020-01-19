@@ -1,13 +1,16 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 
 #include <Windows.h>
 
-bool open_process(std::string const& window_title);
+bool open_process(std::string const& image_name,
+	std::function<int(std::vector<DWORD> const&)> on_processes_found);
 DWORD get_executable_base();
 HANDLE get_process_handle();
+DWORD allocate_page();
 // Signatures are of form
 // <sig>  ::= <byte> <sig> | <byte>
 // <byte> ::= <hex><hex> | ??

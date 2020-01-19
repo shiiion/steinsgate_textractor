@@ -26,28 +26,73 @@ void copy_string_to_clipboard(std::wstring const& str)
 	GlobalFree(clipboard_data);
 }
 
-int main() {
-	std::wcout << "Looking for Steins;Gate or STEINS;GATE 0 window" << std::endl;
-	_setmode(_fileno(stdout), _O_U16TEXT);
-	while (!open_process("Steins;Gate") && !open_process("STEINS;GATE 0")) {
-		Sleep(500);
+DWORD choose_process_cli(std::vector<DWORD> const& proc_list) {
+	std::wcout << L"WARNING! This will write memory to the target process, so careful what you attach to!" << std::endl;
+	if (proc_list.size() == 1) {
+		std::wcout << L"Game.exe found with PID=" << proc_list[0] << std::endl;
+		std::wcout << L"Attach to this process? (y/n) : ";
+		wchar_t resp;
+		std::wcin >> resp;
+		if (resp == L'y' || resp == L'Y') {
+			return proc_list[0];
+		}
+		else if (resp == L'n' || resp == L'N') {
+			exit(0);
+		}
+		std::wcout << L"Invalid input" << std::endl;
+		return 0;
 	}
-	std::wcout << L"Game found" << std::endl << L"Loading signatures" << std::endl;
+	std::wcout << L"Multiple Game.exe processes found: " << std::endl;
+	for (int i = 0; i < proc_list.size(); i++) {
+		std::wcout << (i + 1) << L": PID=" << proc_list[i] << std::endl;
+	}
+	std::wcout << L"Enter a number (1 - " << proc_list.size() << L") to choose a process to attach to, or 0 to exit : " << std::endl;
+	int resp;
+	try {
+		std::wcin >> resp;
+	}
+	catch (...) {
+		std::wcout << L"Invalid input" << std::endl;
+		return 0;
+	}
+	if (!resp) {
+		exit(0);
+	}
+	if (resp <= proc_list.size()) {
+		return proc_list[resp - 1];
+	}
+	std::wcout << L"Invalid input" << std::endl;
+	return 0;
+}
+
+int main() {
+	std::wcout << L"Looking for Steins;Gate or STEINS;GATE 0 process (Game.exe)" << std::endl;
+	_setmode(_fileno(stdout), _O_U16TEXT);
+	if (!open_process("Game.exe", choose_process_cli)) {
+		std::wcout << L"Failed to find/open Game.exe!" << std::endl;
+		Sleep(5000); // Gah I
+		return 1;
+	}
+
+	std::wcout << L"Loading signatures" << std::endl;
 	Game game;
 	if ((game = initialize_sigs()) == INVALID) {
 		std::wcout << "Failed to load signatures" << std::endl;
-		return 1;
+		Sleep(5000); // Hate these
+		return 2;
 	}
 	std::wcout << L"Signatures loaded" << std::endl << L"Loading mages_charset.bin" << std::endl;
 
 	// Must provide charset, provided one is ripped from CommitteeOfZero's SciAdv.Net repo
 	if (!load_utf_16_mapping("mages_charset.bin")) {
 		std::wcout << "Failed to open mages_charset.bin" << std::endl;
-		return 2;
+		Sleep(5000); // Dumb sleeps
+		return 3;
 	}
 
 	std::wcout << L"Loaded charset, ready.\n" << std::endl;
-
+	
+	SGMainText::install_text_hook();
 	SGMainText main_text;
 	SGEmailText email_text;
 	SG0RINEConversation rine_convo;

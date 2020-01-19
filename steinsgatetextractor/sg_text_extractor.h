@@ -5,6 +5,8 @@
 
 #include <Windows.h>
 
+#include "jmp_hook.h"
+
 enum Game {
 	SG,
 	SG0,
@@ -13,6 +15,19 @@ enum Game {
 
 // returns successful initialize
 Game initialize_sigs();
+
+struct SyllabizedWord {
+	SyllabizedWord(size_t insert_point) : insert_point(insert_point) {}
+
+	std::wstring ruby;
+	std::wstring word;
+	size_t insert_point;
+	bool operator==(SyllabizedWord const& other) const {
+		return ruby == other.ruby &&
+			word == other.word &&
+			insert_point == other.insert_point;
+	}
+};
 
 class SGFormattedText {
 public:
@@ -78,6 +93,8 @@ private:
 
 class SGMainText : public SGFormattedText {
 public:
+	static void install_text_hook();
+
 	bool extract_string() override;
 	void get_formatted_string(std::wstring& str_out) const override;
 
@@ -88,18 +105,8 @@ public:
 private:
 	bool _ruby_enabled = true;
 
-	struct SyllabizedWord {
-		SyllabizedWord(size_t insert_point) : insert_point(insert_point) {}
-
-		std::wstring ruby;
-		std::wstring word;
-		size_t insert_point;
-		bool operator==(SyllabizedWord const& other) const {
-			return ruby == other.ruby &&
-				word == other.word &&
-				insert_point == other.insert_point;
-		}
-	};
+	static JmpHook extract_hook;
+	static DWORD text_ptr_page;
 
 	std::wstring speaker;
 	std::vector<SyllabizedWord> syllabized_words;
