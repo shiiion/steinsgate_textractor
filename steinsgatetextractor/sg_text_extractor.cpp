@@ -407,7 +407,7 @@ bool SGMainText::extract_string() {
 void SGMainText::get_formatted_string(std::wstring& str_out) const {
 	std::wostringstream str_builder(L"");
 	if (!speaker.empty()) {
-		str_builder << speaker << ": ";
+		str_builder << speaker << L": ";
 	}
 
 	if (_ruby_enabled) {
@@ -415,7 +415,7 @@ void SGMainText::get_formatted_string(std::wstring& str_out) const {
 			if (ruby_idx < syllabized_words.size() &&
 				syllabized_words[ruby_idx].insert_point == i) {
 				str_builder << syllabized_words[ruby_idx].word << L"(" <<
-					syllabized_words[ruby_idx].ruby << "L)";
+					syllabized_words[ruby_idx].ruby << L")";
 				ruby_idx++;
 			}
 			str_builder << unformatted_text[i];
