@@ -78,7 +78,8 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Configuration)\mages_charset.bin*" /Y</Command>
+      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Configuration)\mages_charset.bin*" /Y
+xcopy "$(SolutionDir)steinsgatetextractor\mages_charset_steam.bin" "$(SolutionDir)$(Configuration)\mages_charset_steam.bin*" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -89,7 +90,8 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset.bin*" /Y</Command>
+      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset.bin*" /Y
+xcopy "$(SolutionDir)steinsgatetextractor\mages_charset_steam.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset_steam.bin*" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +108,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Configuration)\mages_charset.bin*" /Y</Command>
+      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Configuration)\mages_charset.bin*" /Y
+xcopy "$(SolutionDir)steinsgatetextractor\mages_charset_steam.bin" "$(SolutionDir)$(Configuration)\mages_charset_steam.bin*" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,7 +126,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset.bin*" /Y</Command>
+      <Command>xcopy "$(SolutionDir)steinsgatetextractor\mages_charset.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset.bin*" /Y
+xcopy "$(SolutionDir)steinsgatetextractor\mages_charset_steam.bin" "$(SolutionDir)$(Platform)\$(Configuration)\mages_charset_steam.bin*" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
