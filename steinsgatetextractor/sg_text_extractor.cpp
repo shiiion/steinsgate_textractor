@@ -12,6 +12,7 @@ namespace {
 		DWORD unk2_email_data_ptr = 0;
 		DWORD unk3_find_email_ptr = 0;
 		DWORD main_text_hook_ptr = 0;
+        DWORD string_lookup_scalar = 0;
 	} sg_sigs;
 
 	struct {
@@ -98,6 +99,9 @@ namespace {
 			++cur_index;
 			token_val = read_single<BYTE>(cur_index);
 		}
+        if (target_str) {
+            *target_str = std::move(str_builder.str());
+        }
 	}
 
 	// Stolen from IDA decomp, this fn is an absolute mess, appears in both games
@@ -115,12 +119,16 @@ namespace {
 			"C1 02 51", //dword_18EC754, unk1
 			"80 ?? ?? ?? ?? 40 50 FF", //dword_18EC778, unk2
 			"34 85 ?? ?? ?? ?? 0F", //qword_26EE3E8, find_email_text
-			"8B 4D F8 8B 15 ?? ?? ?? ?? 8B 7D DC" }); //main_text_ptr
+			"8B 4D F8 8B 15 ?? ?? ?? ?? 8B 7D DC", //main_text_ptr
+            "8B 80 5C 6A 00 00 8D 0C C5 00 00 00 00 2B C8" }); //slight difference between s;g and darling's embrace
 		sg_sigs.phone_data_ptr = read_single<DWORD>(result[0] + 2);
 		sg_sigs.unk1_counter_ptr = read_single<DWORD>(result[1] + 5);
 		sg_sigs.unk2_email_data_ptr = read_single<DWORD>(result[2] + 1);
 		sg_sigs.unk3_find_email_ptr = read_single<DWORD>(result[3] + 2);
 		sg_sigs.main_text_hook_ptr = result[4] - 7;
+        sg_sigs.string_lookup_scalar = (result[5] ? 0x38 : 0x34);
+        // "fake" result[5]
+        result[5] = 1;
 
 		return std::find(result.begin(), result.end(), 0) == result.end();
 	}
@@ -196,7 +204,7 @@ bool SGEmailText::extract_string() {
 		break;
 	}
 	DWORD unk1 = read_single<DWORD>(sg_sigs.unk1_counter_ptr);
-	DWORD unk2 = read_single<DWORD>(sg_sigs.unk2_email_data_ptr + (0x34 * unk2_index));
+	DWORD unk2 = read_single<DWORD>(sg_sigs.unk2_email_data_ptr + (sg_sigs.string_lookup_scalar * unk2_index));
 	std::wstring contact_tmp;
 	std::wstring subject_tmp;
 	std::wstring body_tmp;
