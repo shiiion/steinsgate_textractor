@@ -41,13 +41,50 @@ namespace {
 		return t_out;
 	}
 
+    // mendokusai....
+    // Returns the address of the terminal byte of the tag
+    DWORD skip_achievement_tag(DWORD cur_index) {
+        BYTE token = read_single<BYTE>(cur_index);
+        if (!token) {
+            return cur_index + 1;
+        }
+        do {
+            if (token & 0x80) {
+                switch (token & 0x60) {
+                case 0:
+                    cur_index += 2;
+                    break;
+                case 0x20:
+                    cur_index += 3;
+                    break;
+                case 0x40:
+                    cur_index += 4;
+                    break;
+                case 0x60:
+                    cur_index += 5;
+                    break;
+                default:
+                    // impossible
+                    break;
+                }
+            } else {
+                cur_index += 2;
+            }
+            token = read_single<BYTE>(cur_index);
+        } while (token);
+        // Just read a 00, return that position
+        return cur_index;
+    }
+
 	void extract_mages_enc_string(DWORD string_start,
 								  std::wstring* unformatted_text,
 								  std::vector<SyllabizedWord>* syllabized_words,
 								  std::wstring* speaker) {
+        // I hope this is correct
 		constexpr DWORD SPEAKER_TAG = 1;
 		constexpr DWORD TEXT_TAG = 2;
 		constexpr DWORD MARKUP_END_TAG = 3;
+        constexpr DWORD ACHIEVE_WORD_TAG = 4;
 		// Ruby format = text under ruby
 		constexpr DWORD RUBY_FORMAT_START_TAG = 9;
 		constexpr DWORD RUBY_TEXT_START_TAG = 10;
@@ -71,6 +108,9 @@ namespace {
 				case TEXT_TAG:
 					target_str = unformatted_text;
 					break;
+                case ACHIEVE_WORD_TAG:
+                    cur_index = skip_achievement_tag(cur_index);
+                    break;
 				case RUBY_FORMAT_START_TAG:
 					if (syllabized_words) {
 						syllabized_words->emplace_back(unformatted_text->size());
