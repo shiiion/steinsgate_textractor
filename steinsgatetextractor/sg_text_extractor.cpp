@@ -109,7 +109,7 @@ namespace {
 					target_str = unformatted_text;
 					break;
                 case ACHIEVE_WORD_TAG:
-                    cur_index = skip_achievement_tag(cur_index);
+                    cur_index = skip_achievement_tag(cur_index + 1);
                     break;
 				case RUBY_FORMAT_START_TAG:
 					if (syllabized_words) {
@@ -460,7 +460,7 @@ void SGMainText::get_formatted_string(std::wstring& str_out) const {
 
 	if (_ruby_enabled) {
 		for (size_t i = 0, ruby_idx = 0; i < unformatted_text.size(); i++) {
-			if (ruby_idx < syllabized_words.size() &&
+			while (ruby_idx < syllabized_words.size() &&
 				syllabized_words[ruby_idx].insert_point == i) {
 				str_builder << syllabized_words[ruby_idx].word << L"(" <<
 					syllabized_words[ruby_idx].ruby << L")";
