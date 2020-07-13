@@ -178,16 +178,16 @@ namespace {
 			{ "A1 ?? ?? ?? ?? 83 B8 20", //dword_2E3A9BC, phone state ptr
 			"F7 E9 A1", //zero if sending sticker message (or some other stuff)
 			"03 C1 50 FF 35", //unk1
-			"8B 4D 08 A1 ?? ?? ?? ?? 03 C1 50", //unk2
+			"8B 4D 08 A1 ?? ?? ?? ?? 03 C1", //unk2
 			"A1 ?? ?? ?? ?? 03 05 ?? ?? ?? ?? 50 FF 35", //unk2 unsent message
 			"8B 82 ?? ?? ?? ?? 8D", //RINE message 
 			"56 8B 34 85 ?? ?? ?? ?? 0F", //find_email_text
-			"03 C8 8D 14", //RINE message metadata?
+			"03 C8 8D 14 8D", //RINE message metadata?
 			"83 BE ?? ?? ?? ?? 0F 53 8B 1D", //okabe rine index?
 			"89 8A ?? ?? ?? ?? 3B 0D", //other contact rine index?
 			"FF 34 DD ?? ?? ?? ?? FF", //rine contact metadata?
-			"8B 4D F8 8B 15 ?? ?? ?? ?? 8B 7D DC", //main_text_ptr
-			"53 56 57 8B 3D ?? ?? ?? ?? 8B D7" }); //message_count
+			"8B 45 E0 89 87 4C 01 00 00 68 02 05 00 00", //main_text_ptr
+			"8B 4D 10 53 56 57 8B 3D" }); //message_count
 		sg0_sigs.phone_data_ptr = read_single<DWORD>(result[0] + 1);
 		sg0_sigs.send_message_lines = read_single<DWORD>(result[1] + 3);
 		sg0_sigs.unk1_counter_ptr = read_single<DWORD>(result[2] + 5);
@@ -199,8 +199,8 @@ namespace {
 		sg0_sigs.okabe_rine_index_ptr = read_single<DWORD>(result[8] + 2);
 		sg0_sigs.contacts_rine_index_ptr = read_single<DWORD>(result[9] + 2);
 		sg0_sigs.contacts_metadata_ptr = read_single<DWORD>(result[10] + 3);
-		sg0_sigs.main_text_hook_ptr = result[11] - 7;
-		sg0_sigs.rine_message_count = read_single<DWORD>(result[12] + 5);
+		sg0_sigs.main_text_hook_ptr = result[11] + 0x39;
+		sg0_sigs.rine_message_count = read_single<DWORD>(result[12] + 8);
 
 		return std::find(result.begin(), result.end(), 0) == result.end();
 	}
