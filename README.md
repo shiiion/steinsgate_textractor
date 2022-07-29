@@ -15,7 +15,16 @@ Running this program should be all you need to do, make sure that
 mages_charset.bin is in the same directory as the executable.
 It will print any new text bubbles to console, and will print e-mail
 sender, subject, and body upon opening said e-mail. For s;g0 it prints
-the full conversation to console. If you are playing the Japanese version from Steam and the text being output isn't correct, swap mages_charset.bin for mages_charset_steam.bin (make sure that mages_charset_steam.bin is renamed to mages_charset.bin). To play Linear Bounded Phenogram or Darling's Embrace, rename the respective charset to mages_charset.bin.
+the full conversation to console.
+
+Depending on the version you are playing, you will need to swap out the character set (mages_charset.bin) for the correct one.
+The actively used charset is whichever charset file is named `mages_charset.bin`, so swapping out a different version only involves renaming the desired charset file to `mages_charset.bin`
+
+- Japanese steam version of Steins;Gate and Steins;Gate 0: rename `mages_charset_steam.bin` to `mages_charset.bin`
+- Japanese steam version of Steins;Gate Linear Bounded Phenogram: rename `mages_charset_lbp.bin` to `mages_charset.bin`
+- Japanese steam version of Steins;Gate My Darling's Embrace: rename `mages_charset_darling.bin` to `mages_charset.bin`
+
+Otherwise, do not touch any of the `mages_charset.bin` files.
 > Make sure to close and reopen after closing the game, as it doesn't reopen on its own.
 ### Sample Images
 It's self-explanatory.
